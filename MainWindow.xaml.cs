@@ -11,6 +11,7 @@ namespace SunoScrapper;
 public partial class MainWindow : Window
 {
     private static readonly HttpClient DownloadClient = CreateDownloadClient();
+    private static readonly SemaphoreSlim CoverLoadGate = new(4);
     private readonly string _libraryRoot;
     private readonly LibraryScanner _scanner;
     private LibraryCatalog _catalog = new();
@@ -40,6 +41,7 @@ public partial class MainWindow : Window
             _catalog = cached;
             ShowCatalog();
             StatusText.Text = $"Loaded catalog from {cached.GeneratedAt:g}";
+            _ = _scanner.CompactCacheIfNeededAsync(cached);
         }
         else
         {
@@ -72,8 +74,24 @@ public partial class MainWindow : Window
 
     private void ShowCatalog()
     {
-        foreach (var song in _catalog.Songs) LibraryScanner.LoadCover(song);
         ApplyFilterAndSort();
+    }
+
+    private async void CoverImage_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Image { Tag: SongRecord song } || song.CoverImage is not null || song.IsCoverLoading || string.IsNullOrWhiteSpace(song.LocalImagePath)) return;
+        song.IsCoverLoading = true;
+        await CoverLoadGate.WaitAsync();
+        try
+        {
+            var image = await Task.Run(() => LibraryScanner.LoadCover(song.LocalImagePath));
+            if (image is not null && song.CoverImage is null) song.CoverImage = image;
+        }
+        finally
+        {
+            song.IsCoverLoading = false;
+            CoverLoadGate.Release();
+        }
     }
 
     private void ApplyFilterAndSort()

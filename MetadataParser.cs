@@ -50,7 +50,6 @@ public static class MetadataParser
                 ? String(workspace, "name", fallbackWorkflow)
                 : fallbackWorkflow,
             MetadataPath = metadataPath,
-            RawJson = rawJson
         };
 
         if (metadata is { } md)

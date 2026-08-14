@@ -85,7 +85,7 @@
                                                     <Border Width="64" Height="64" Background="#0E1115" CornerRadius="0" VerticalAlignment="Top" HorizontalAlignment="Left" ClipToBounds="True">
                                                         <Grid>
                                                             <TextBlock Text="NO ART" Foreground="#66717C" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                            <Image Source="{Binding CoverImage}" Stretch="UniformToFill"/>
+                                                            <Image Source="{Binding CoverImage}" Stretch="UniformToFill" Tag="{Binding}" Loaded="CoverImage_Loaded"/>
                                                         </Grid>
                                                     </Border>
 

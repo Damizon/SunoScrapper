@@ -8,6 +8,7 @@ namespace SunoScrapper;
 public sealed class LibraryCatalog
 {
     public int SchemaVersion { get; set; }
+    public int CacheFormatVersion { get; set; }
     public DateTime GeneratedAt { get; set; }
     public string LibraryRoot { get; set; } = "";
     public List<SongRecord> Songs { get; set; } = [];
@@ -53,8 +54,6 @@ public sealed class SongRecord : INotifyPropertyChanged
     public List<string> DisplayTags { get; set; } = [];
     public string SourceClipId { get; set; } = "";
     public string StemType { get; set; } = "";
-    public string RawJson { get; set; } = "";
-
     [JsonIgnore] public string DurationText => Duration is null ? "" : TimeSpan.FromSeconds(Duration.Value).ToString(Duration >= 3600 ? @"h\:mm\:ss" : @"m\:ss");
     [JsonIgnore] public string DateText => CreatedAt?.ToLocalTime().ToString("dd MMM yyyy, HH:mm") ?? (Year?.ToString() ?? "");
     [JsonIgnore] public string ModelText => !string.IsNullOrWhiteSpace(ModelDisplayName) ? ModelDisplayName : ModelName;
@@ -111,6 +110,7 @@ public sealed class SongRecord : INotifyPropertyChanged
     }
 
     private BitmapImage? _coverImage;
+    [JsonIgnore] public bool IsCoverLoading { get; set; }
     [JsonIgnore]
     public BitmapImage? CoverImage
     {

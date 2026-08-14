@@ -24,15 +24,14 @@ public sealed class LibraryScanner
     {
         Directory.CreateDirectory(_dbDirectory);
         Directory.CreateDirectory(_imagesDirectory);
-        var catalog = new LibraryCatalog { SchemaVersion = 5, GeneratedAt = DateTime.Now, LibraryRoot = _root };
+        var catalog = new LibraryCatalog { SchemaVersion = 5, CacheFormatVersion = 1, GeneratedAt = DateTime.Now, LibraryRoot = _root };
         var metadataFiles = Directory.GetFiles(_root, "*.txt", SearchOption.AllDirectories)
             .Where(x => !IsInDatabaseDirectory(x))
             .Where(MetadataParser.IsMetadataFile)
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        var audioFiles = Directory.EnumerateFiles(_root, "*.*", SearchOption.AllDirectories)
-            .Where(x => Path.GetExtension(x).Equals(".wav", StringComparison.OrdinalIgnoreCase)
-                || Path.GetExtension(x).Equals(".mp3", StringComparison.OrdinalIgnoreCase))
+        var audioFiles = Directory.EnumerateFiles(_root, "*.wav", SearchOption.AllDirectories)
+            .Concat(Directory.EnumerateFiles(_root, "*.mp3", SearchOption.AllDirectories))
             .Where(x => !IsInDatabaseDirectory(x))
             .ToArray();
 
@@ -76,21 +75,38 @@ public sealed class LibraryScanner
         catch { return null; }
     }
 
-    public static void LoadCover(SongRecord song)
+    public async Task CompactCacheIfNeededAsync(LibraryCatalog catalog)
     {
-        if (!File.Exists(song.LocalImagePath)) return;
+        if (catalog.CacheFormatVersion >= 1) return;
+        catalog.CacheFormatVersion = 1;
+        var path = Path.Combine(_dbDirectory, "catalog.json");
+        var temporary = path + ".tmp";
+        try
+        {
+            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(catalog, JsonOptions));
+            File.Move(temporary, path, true);
+        }
+        catch
+        {
+            try { if (File.Exists(temporary)) File.Delete(temporary); } catch { }
+        }
+    }
+
+    public static BitmapImage? LoadCover(string path)
+    {
+        if (!File.Exists(path)) return null;
         try
         {
             var image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.DecodePixelWidth = 240;
-            image.UriSource = new Uri(song.LocalImagePath, UriKind.Absolute);
+            image.UriSource = new Uri(path, UriKind.Absolute);
             image.EndInit();
             image.Freeze();
-            song.CoverImage = image;
+            return image;
         }
-        catch { }
+        catch { return null; }
     }
 
     private void MergeSafetyDuplicates(LibraryCatalog catalog)
