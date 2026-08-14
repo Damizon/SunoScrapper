@@ -1,0 +1,24 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Local application data
+scrapper_db/
+catalog.json
+scan-report.txt
+
+# Distributed binaries
+*.exe
+*.dll
+*.pdb
+
+# IDE and user settings
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Operating system files
+Thumbs.db
+.DS_Store
