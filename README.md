@@ -4,7 +4,9 @@ Suno Library Scrapper is a portable Windows application for browsing and organiz
 
 It is designed to work with libraries downloaded using the **Suno Tracks Exporter** browser extension. The application reads the exported metadata, groups songs by their Suno workspace, matches metadata with local WAV files, displays cover artwork and generation details, and helps identify duplicate downloads.
 
-[![Download SunoScrapper.exe](https://img.shields.io/badge/Download-SunoScrapper.exe-4C9A69?style=for-the-badge&logo=windows)](https://damizon.duckdns.org/dev/SunoScrapper.exe)
+[![Download SunoScrapper](https://img.shields.io/badge/Download-SunoScrapper.zip-4C9A69?style=for-the-badge&logo=windows)](https://github.com/Damizon/SunoScrapper/releases/download/v1.0.0/SunoScrapper.zip)
+
+[Download the standalone EXE](https://damizon.duckdns.org/dev/SunoScrapper.exe) · [View all releases](https://github.com/Damizon/SunoScrapper/releases)
 
 ## Exporting your Suno library
 
@@ -31,10 +33,16 @@ The files may be organized into workspace folders or placed together in a single
 
 ## Usage
 
-1. Download [SunoScrapper.exe](https://damizon.duckdns.org/dev/SunoScrapper.exe).
-2. Place it in the main folder containing your exported Suno files or workspace folders.
-3. Run `SunoScrapper.exe`.
-4. Allow the initial scan to finish.
+1. Download [SunoScrapper.zip](https://github.com/Damizon/SunoScrapper/releases/download/v1.0.0/SunoScrapper.zip).
+2. Extract `SunoScrapper.exe` from the ZIP archive.
+3. Place it in the main folder containing your exported Suno files or workspace folders.
+4. Run `SunoScrapper.exe` and allow the initial scan to finish.
+
+SHA-256 for `SunoScrapper.zip`:
+
+```text
+DFBA9B0AEB3891C467DDA46441D6A85F114FF480D4A1EFC656C8E947A2BFA7E6
+```
 
 The application creates a `scrapper_db` folder next to the executable. It contains the local catalog cache, downloaded artwork and a scan report. Use **Rescan library** after adding or removing exported tracks.
 
