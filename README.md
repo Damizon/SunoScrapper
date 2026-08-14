@@ -2,7 +2,7 @@
 
 Suno Library Scrapper is a portable Windows application for browsing and organizing a locally downloaded Suno music library.
 
-It is designed to work with libraries downloaded using the [Suno Tracks Exporter](https://chromewebstore.google.com/detail/pooodjgdoajgkhcnjfabfbdifeakoocm) browser extension. The application reads the exported metadata, groups songs by their Suno workspace, matches metadata with local WAV files, displays cover artwork and generation details, and helps identify duplicate downloads.
+It is designed to work with libraries downloaded using the [Suno Tracks Exporter ↗ (Chrome Web Store)](https://chromewebstore.google.com/detail/pooodjgdoajgkhcnjfabfbdifeakoocm) browser extension. The application reads the exported metadata, groups songs by their Suno workspace, matches metadata with local WAV files, displays cover artwork and generation details, and helps identify duplicate downloads.
 
 > **Third-party notice:** Suno Tracks Exporter is an independent browser extension created by its respective developer. Suno Library Scrapper is not affiliated with, endorsed by, or maintained by the extension's developer or by Suno.
 
@@ -12,7 +12,7 @@ It is designed to work with libraries downloaded using the [Suno Tracks Exporter
 
 ## Exporting your Suno library
 
-In [Suno Tracks Exporter](https://chromewebstore.google.com/detail/pooodjgdoajgkhcnjfabfbdifeakoocm), enable:
+In [Suno Tracks Exporter ↗ (Chrome Web Store)](https://chromewebstore.google.com/detail/pooodjgdoajgkhcnjfabfbdifeakoocm), enable:
 
 > **Include workspace in filename**
 
