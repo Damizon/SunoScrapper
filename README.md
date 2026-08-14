@@ -6,7 +6,7 @@ It is designed to work with libraries downloaded using the **Suno Tracks Exporte
 
 [![Download SunoScrapper](https://img.shields.io/badge/Download-SunoScrapper.zip-4C9A69?style=for-the-badge&logo=windows)](https://github.com/Damizon/SunoScrapper/releases/download/v1.0.0/SunoScrapper.zip)
 
-[Download the standalone EXE](https://damizon.duckdns.org/dev/SunoScrapper.exe) · [View all releases](https://github.com/Damizon/SunoScrapper/releases)
+[View all releases](https://github.com/Damizon/SunoScrapper/releases)
 
 ## Exporting your Suno library
 
