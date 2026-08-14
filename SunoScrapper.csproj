@@ -8,9 +8,10 @@
     <AssemblyName>SunoScrapper</AssemblyName>
     <RootNamespace>SunoScrapper</RootNamespace>
     <ApplicationIcon>scrapper.ico</ApplicationIcon>
-    <PublishSingleFile>false</PublishSingleFile>
+    <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="scrapper.ico"/>
