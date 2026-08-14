@@ -30,7 +30,7 @@ public sealed class SongRecord : INotifyPropertyChanged
     public string ImageUrl { get; set; } = "";
     public string LocalImagePath { get; set; } = "";
     public string MetadataPath { get; set; } = "";
-    public string WavPath { get; set; } = "";
+    public string LocalAudioPath { get; set; } = "";
     public string Workflow { get; set; } = "";
     public List<string> AlsoFoundIn { get; set; } = [];
     public bool IsDuplicate { get; set; }
@@ -68,7 +68,7 @@ public sealed class SongRecord : INotifyPropertyChanged
         get
         {
             if (!IsDuplicate) return "";
-            var path = !string.IsNullOrWhiteSpace(WavPath) ? WavPath : MetadataPath;
+            var path = !string.IsNullOrWhiteSpace(LocalAudioPath) ? LocalAudioPath : MetadataPath;
             var directory = string.IsNullOrWhiteSpace(path) ? "" : Path.GetDirectoryName(path);
             return string.IsNullOrWhiteSpace(directory) ? "" : $"Duplicate location: {directory}";
         }
@@ -76,9 +76,10 @@ public sealed class SongRecord : INotifyPropertyChanged
     [JsonIgnore] public bool HasPrompt => !string.IsNullOrWhiteSpace(StylePrompt);
     [JsonIgnore] public bool HasLyrics => !string.IsNullOrWhiteSpace(Lyrics);
     [JsonIgnore] public bool HasMp3 => Uri.TryCreate(AudioUrl, UriKind.Absolute, out _);
-    [JsonIgnore] public bool HasWav => File.Exists(WavPath);
+    [JsonIgnore] public bool HasLocalAudio => File.Exists(LocalAudioPath);
+    [JsonIgnore] public bool LocalAudioIsMp3 => HasLocalAudio && Path.GetExtension(LocalAudioPath).Equals(".mp3", StringComparison.OrdinalIgnoreCase);
     [JsonIgnore] public bool HasGenerationDetails => StyleWeight is not null || Weirdness is not null || AudioWeight is not null || !string.IsNullOrWhiteSpace(PersonaName) || !string.IsNullOrWhiteSpace(SourceClipId);
-    [JsonIgnore] public bool CanDownloadMp3 => HasMp3 && HasWav;
+    [JsonIgnore] public bool CanDownloadMp3 => HasMp3 && HasLocalAudio && !LocalAudioIsMp3;
 
     private bool _isPromptOpen;
     private bool _isLyricsOpen;

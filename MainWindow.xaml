@@ -116,12 +116,12 @@
                                                         <TextBlock Text="{Binding SliderText}" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
 
                                                         <WrapPanel Margin="0,7,0,0">
-                                                            <Button Content="Open MP3" Tag="{Binding}" Click="OpenMp3_Click" IsEnabled="{Binding HasMp3}"/>
+                                                            <Button Content="Open MP3 from Suno" Tag="{Binding}" Click="OpenMp3_Click" IsEnabled="{Binding HasMp3}"/>
                                                             <Button Content="Download MP3" Tag="{Binding}" Click="DownloadMp3_Click" IsEnabled="{Binding CanDownloadMp3}"/>
-                                                            <Button Content="Open WAV" Tag="{Binding}" Click="OpenWav_Click" IsEnabled="{Binding HasWav}"/>
-                                                            <Button Content="Show WAV in Explorer" Tag="{Binding}" Click="RevealWav_Click" IsEnabled="{Binding HasWav}"/>
-                                                            <Button Content="Copy WAV" Tag="{Binding}" Click="CopyWav_Click" IsEnabled="{Binding HasWav}"/>
-                                                            <Button Content="Copy path" Tag="{Binding}" Click="CopyPath_Click" IsEnabled="{Binding HasWav}"/>
+                                                            <Button Content="Open local file" Tag="{Binding}" Click="OpenWav_Click" IsEnabled="{Binding HasLocalAudio}"/>
+                                                            <Button Content="Show in Explorer" Tag="{Binding}" Click="RevealWav_Click" IsEnabled="{Binding HasLocalAudio}"/>
+                                                            <Button Content="Copy file" Tag="{Binding}" Click="CopyWav_Click" IsEnabled="{Binding HasLocalAudio}"/>
+                                                            <Button Content="Copy path" Tag="{Binding}" Click="CopyPath_Click" IsEnabled="{Binding HasLocalAudio}"/>
                                                             <Button Content="Delete duplicate" Tag="{Binding}" Click="DeleteDuplicate_Click"
                                                                     Visibility="{Binding IsDuplicate, Converter={StaticResource BoolToVisibility}}"
                                                                     Background="#58231F" BorderBrush="#D65A50" Foreground="#FFD8D4"/>
@@ -165,7 +165,7 @@
                                                                             <TextBlock Grid.Row="5" Text="Source clip ID" Foreground="{StaticResource TextSecondary}" Margin="0,0,10,3"/><TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SourceClipId}" TextWrapping="Wrap"/>
                                                                             <TextBlock Grid.Row="6" Text="Suno ID" Foreground="{StaticResource TextSecondary}" Margin="0,0,10,3"/><TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Id}" TextWrapping="Wrap"/>
                                                                             <TextBlock Grid.Row="7" Text="Metadata file" Foreground="{StaticResource TextSecondary}" Margin="0,0,10,3"/><TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding MetadataPath}" TextWrapping="Wrap" ToolTip="{Binding MetadataPath}"/>
-                                                                            <TextBlock Grid.Row="8" Text="Local WAV" Foreground="{StaticResource TextSecondary}" Margin="0,0,10,0"/><TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding WavPath}" TextWrapping="Wrap" ToolTip="{Binding WavPath}"/>
+                                                                            <TextBlock Grid.Row="8" Text="Local audio" Foreground="{StaticResource TextSecondary}" Margin="0,0,10,0"/><TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding LocalAudioPath}" TextWrapping="Wrap" ToolTip="{Binding LocalAudioPath}"/>
                                                                         </Grid>
                                                                     </ScrollViewer>
                                                                 </Border>

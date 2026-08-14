@@ -153,7 +153,7 @@ public partial class MainWindow : Window
 
     private static SongRecord? SongFrom(object sender) => (sender as FrameworkElement)?.Tag as SongRecord;
     private void OpenMp3_Click(object sender, RoutedEventArgs e) => OpenTarget(SongFrom(sender)?.AudioUrl);
-    private void OpenWav_Click(object sender, RoutedEventArgs e) => OpenTarget(SongFrom(sender)?.WavPath);
+    private void OpenWav_Click(object sender, RoutedEventArgs e) => OpenTarget(SongFrom(sender)?.LocalAudioPath);
     private static HttpClient CreateDownloadClient()
     {
         var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
@@ -165,7 +165,7 @@ public partial class MainWindow : Window
     {
         if (sender is not Button button || SongFrom(sender) is not { } song || !song.CanDownloadMp3) return;
 
-        var destination = Path.ChangeExtension(song.WavPath, ".mp3");
+        var destination = Path.ChangeExtension(song.LocalAudioPath, ".mp3");
         if (File.Exists(destination))
         {
             var overwrite = MessageBox.Show(this, $"MP3 already exists:\n\n{destination}\n\nReplace it?", "Download MP3",
@@ -222,40 +222,40 @@ public partial class MainWindow : Window
 
     private void RevealWav_Click(object sender, RoutedEventArgs e)
     {
-        var path = SongFrom(sender)?.WavPath;
+        var path = SongFrom(sender)?.LocalAudioPath;
         if (!File.Exists(path)) return;
         Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
     }
 
     private void CopyWav_Click(object sender, RoutedEventArgs e)
     {
-        var path = SongFrom(sender)?.WavPath;
+        var path = SongFrom(sender)?.LocalAudioPath;
         if (!File.Exists(path)) return;
         try
         {
             var files = new System.Collections.Specialized.StringCollection { path };
             Clipboard.SetFileDropList(files);
-            StatusText.Text = $"Copied WAV: {Path.GetFileName(path)}";
+            StatusText.Text = $"Copied audio: {Path.GetFileName(path)}";
         }
-        catch (Exception ex) { ShowActionError("Could not copy the WAV file.", ex); }
+        catch (Exception ex) { ShowActionError("Could not copy the local audio file.", ex); }
     }
 
-    private void CopyPath_Click(object sender, RoutedEventArgs e) => CopyText(SongFrom(sender)?.WavPath, "WAV path copied");
+    private void CopyPath_Click(object sender, RoutedEventArgs e) => CopyText(SongFrom(sender)?.LocalAudioPath, "Audio path copied");
 
     private async void DeleteDuplicate_Click(object sender, RoutedEventArgs e)
     {
         if (SongFrom(sender) is not { IsDuplicate: true } duplicate) return;
         var primary = _catalog.Songs.FirstOrDefault(x => !string.IsNullOrWhiteSpace(duplicate.Id) && x.Id.Equals(duplicate.Id, StringComparison.OrdinalIgnoreCase));
-        var canDeleteWav = File.Exists(duplicate.WavPath)
-            && !string.Equals(primary?.WavPath, duplicate.WavPath, StringComparison.OrdinalIgnoreCase)
-            && _catalog.Duplicates.Count(x => string.Equals(x.WavPath, duplicate.WavPath, StringComparison.OrdinalIgnoreCase)) == 1;
+        var canDeleteAudio = File.Exists(duplicate.LocalAudioPath)
+            && !string.Equals(primary?.LocalAudioPath, duplicate.LocalAudioPath, StringComparison.OrdinalIgnoreCase)
+            && _catalog.Duplicates.Count(x => string.Equals(x.LocalAudioPath, duplicate.LocalAudioPath, StringComparison.OrdinalIgnoreCase)) == 1;
         var files = new List<string>();
         if (File.Exists(duplicate.MetadataPath)) files.Add(duplicate.MetadataPath);
-        if (canDeleteWav) files.Add(duplicate.WavPath);
+        if (canDeleteAudio) files.Add(duplicate.LocalAudioPath);
         if (files.Count == 0) return;
 
         var message = $"Delete this duplicate of '{duplicate.DuplicateOfTitle}'?\n\n" + string.Join("\n", files) +
-            (canDeleteWav ? "" : "\n\nThe WAV is shared with another entry and will be kept.");
+            (canDeleteAudio ? "" : "\n\nThe local audio file is shared with another entry and will be kept.");
         if (MessageBox.Show(this, message, "Delete duplicate", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         try
         {

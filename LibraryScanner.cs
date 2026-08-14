@@ -24,13 +24,15 @@ public sealed class LibraryScanner
     {
         Directory.CreateDirectory(_dbDirectory);
         Directory.CreateDirectory(_imagesDirectory);
-        var catalog = new LibraryCatalog { SchemaVersion = 4, GeneratedAt = DateTime.Now, LibraryRoot = _root };
+        var catalog = new LibraryCatalog { SchemaVersion = 5, GeneratedAt = DateTime.Now, LibraryRoot = _root };
         var metadataFiles = Directory.GetFiles(_root, "*.txt", SearchOption.AllDirectories)
             .Where(x => !IsInDatabaseDirectory(x))
             .Where(MetadataParser.IsMetadataFile)
             .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        var wavs = Directory.GetFiles(_root, "*.wav", SearchOption.AllDirectories)
+        var audioFiles = Directory.EnumerateFiles(_root, "*.*", SearchOption.AllDirectories)
+            .Where(x => Path.GetExtension(x).Equals(".wav", StringComparison.OrdinalIgnoreCase)
+                || Path.GetExtension(x).Equals(".mp3", StringComparison.OrdinalIgnoreCase))
             .Where(x => !IsInDatabaseDirectory(x))
             .ToArray();
 
@@ -43,7 +45,7 @@ public sealed class LibraryScanner
             progress?.Report($"Scanning {Path.GetFileName(metadataPath)}…");
             try
             {
-                catalog.Songs.Add(MetadataParser.Parse(metadataPath, fallbackWorkflow, wavs));
+                catalog.Songs.Add(MetadataParser.Parse(metadataPath, fallbackWorkflow, audioFiles));
             }
             catch (Exception ex)
             {
@@ -69,7 +71,7 @@ public sealed class LibraryScanner
         {
             await using var stream = File.OpenRead(path);
             var catalog = await JsonSerializer.DeserializeAsync<LibraryCatalog>(stream, JsonOptions);
-            return catalog?.SchemaVersion == 4 ? catalog : null;
+            return catalog?.SchemaVersion == 5 ? catalog : null;
         }
         catch { return null; }
     }
@@ -112,10 +114,10 @@ public sealed class LibraryScanner
                 duplicate.DuplicateOfWorkflow = primary.Workflow;
                 catalog.Duplicates.Add(duplicate);
             }
-            if (!primary.HasWav)
+            if (!primary.HasLocalAudio)
             {
-                var copyWithWav = records.FirstOrDefault(x => x.HasWav);
-                if (copyWithWav is not null) primary.WavPath = copyWithWav.WavPath;
+                var copyWithAudio = records.FirstOrDefault(x => x.HasLocalAudio);
+                if (copyWithAudio is not null) primary.LocalAudioPath = copyWithAudio.LocalAudioPath;
             }
             result.Add(primary);
         }
@@ -179,7 +181,7 @@ public sealed class LibraryScanner
         sb.AppendLine($"Generated: {catalog.GeneratedAt:O}");
         sb.AppendLine($"Unique songs: {catalog.Songs.Count}");
         sb.AppendLine($"Duplicate copies: {catalog.Duplicates.Count}");
-        sb.AppendLine($"Missing WAV matches: {catalog.Songs.Count(x => !x.HasWav)}");
+        sb.AppendLine($"Missing local audio matches: {catalog.Songs.Count(x => !x.HasLocalAudio)}");
         sb.AppendLine($"Missing MP3 links: {catalog.Songs.Count(x => !x.HasMp3)}");
         sb.AppendLine($"Issues: {catalog.Issues.Count}");
         foreach (var issue in catalog.Issues) sb.AppendLine($"[{issue.Type}] {issue.Path}: {issue.Message}");

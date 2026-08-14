@@ -19,7 +19,7 @@ public static class MetadataParser
         return false;
     }
 
-    public static SongRecord Parse(string metadataPath, string fallbackWorkflow, IReadOnlyList<string> wavFiles)
+    public static SongRecord Parse(string metadataPath, string fallbackWorkflow, IReadOnlyList<string> audioFiles)
     {
         var text = File.ReadAllText(metadataPath);
         var markerIndex = text.IndexOf(RawMarker, StringComparison.Ordinal);
@@ -86,11 +86,11 @@ public static class MetadataParser
         if (root.TryGetProperty("display_tags", out var tags) && tags.ValueKind == JsonValueKind.Array)
             song.DisplayTags = tags.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
 
-        song.WavPath = FindWav(metadataPath, text, song, wavFiles);
+        song.LocalAudioPath = FindLocalAudio(metadataPath, text, song, audioFiles);
         return song;
     }
 
-    private static string FindWav(string metadataPath, string text, SongRecord song, IReadOnlyList<string> wavFiles)
+    private static string FindLocalAudio(string metadataPath, string text, SongRecord song, IReadOnlyList<string> audioFiles)
     {
         var direct = metadataPath[..^4];
         if (File.Exists(direct)) return direct;
@@ -102,16 +102,16 @@ public static class MetadataParser
             if (File.Exists(candidate)) return candidate;
         }
 
-        var oddSuffix = Regex.Replace(direct, @"\.wav\s+\((\d+)\)$", " ($1).wav", RegexOptions.IgnoreCase);
+        var oddSuffix = Regex.Replace(direct, @"\.(wav|mp3)\s+\((\d+)\)$", " ($2).$1", RegexOptions.IgnoreCase);
         if (File.Exists(oddSuffix)) return oddSuffix;
         if (!string.IsNullOrWhiteSpace(song.Id))
         {
-            var byId = wavFiles.FirstOrDefault(x => Path.GetFileName(x).Contains(song.Id[..Math.Min(8, song.Id.Length)], StringComparison.OrdinalIgnoreCase));
+            var byId = audioFiles.FirstOrDefault(x => Path.GetFileName(x).Contains(song.Id[..Math.Min(8, song.Id.Length)], StringComparison.OrdinalIgnoreCase));
             if (byId is not null) return byId;
         }
 
         var normalizedTitle = Normalize(song.Title);
-        var matches = wavFiles.Where(x => Normalize(Path.GetFileNameWithoutExtension(x)).Contains(normalizedTitle, StringComparison.OrdinalIgnoreCase)).ToList();
+        var matches = audioFiles.Where(x => Normalize(Path.GetFileNameWithoutExtension(x)).Contains(normalizedTitle, StringComparison.OrdinalIgnoreCase)).ToList();
         return matches.Count == 1 ? matches[0] : "";
     }
 
