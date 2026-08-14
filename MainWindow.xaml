@@ -28,6 +28,8 @@
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="SongsTabButton" Content="Songs" Click="SongsTab_Click" Background="#244A35" BorderBrush="#4C9A69" Foreground="#D9FFE5"/>
+                    <Button x:Name="StemsTabButton" Content="Stems" Click="StemsTab_Click"/>
                     <Button x:Name="RescanButton" Content="Rescan library" Style="{StaticResource AccentButton}" Click="Rescan_Click"/>
                     <Button x:Name="FullscreenButton" Content="Full screen  F11" Click="Fullscreen_Click"
                             Background="#172F52" BorderBrush="#315F91" Foreground="#D9EBFF"/>
@@ -185,7 +187,7 @@
 
             <Border x:Name="EmptyState" Background="{StaticResource WindowBg}" Visibility="Collapsed">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Text="No songs found" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="EmptyStateTitle" Text="No songs found" FontSize="26" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                     <TextBlock Text="Place SunoScrapper.exe in the folder that contains your Suno workflow folders, then rescan." Foreground="{StaticResource TextSecondary}" Margin="0,8,0,0"/>
                 </StackPanel>
             </Border>

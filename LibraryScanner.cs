@@ -24,7 +24,7 @@ public sealed class LibraryScanner
     {
         Directory.CreateDirectory(_dbDirectory);
         Directory.CreateDirectory(_imagesDirectory);
-        var catalog = new LibraryCatalog { SchemaVersion = 5, CacheFormatVersion = 1, GeneratedAt = DateTime.Now, LibraryRoot = _root };
+        var catalog = new LibraryCatalog { SchemaVersion = 7, CacheFormatVersion = 1, GeneratedAt = DateTime.Now, LibraryRoot = _root };
         var metadataFiles = Directory.GetFiles(_root, "*.txt", SearchOption.AllDirectories)
             .Where(x => !IsInDatabaseDirectory(x))
             .Where(MetadataParser.IsMetadataFile)
@@ -44,7 +44,9 @@ public sealed class LibraryScanner
             progress?.Report($"Scanning {Path.GetFileName(metadataPath)}…");
             try
             {
-                catalog.Songs.Add(MetadataParser.Parse(metadataPath, fallbackWorkflow, audioFiles));
+                var record = MetadataParser.Parse(metadataPath, fallbackWorkflow, audioFiles);
+                if (record.IsStem) catalog.Stems.Add(record);
+                else catalog.Songs.Add(record);
             }
             catch (Exception ex)
             {
@@ -54,6 +56,8 @@ public sealed class LibraryScanner
 
         MergeSafetyDuplicates(catalog);
         await DownloadImagesAsync(catalog.Songs, progress, cancellationToken);
+        AssignStemImages(catalog);
+        await DownloadImagesAsync(catalog.Stems.Where(x => string.IsNullOrWhiteSpace(x.LocalImagePath)), progress, cancellationToken);
         await File.WriteAllTextAsync(Path.Combine(_dbDirectory, "catalog.json"), JsonSerializer.Serialize(catalog, JsonOptions), cancellationToken);
         await WriteReportAsync(catalog, cancellationToken);
         return catalog;
@@ -70,7 +74,7 @@ public sealed class LibraryScanner
         {
             await using var stream = File.OpenRead(path);
             var catalog = await JsonSerializer.DeserializeAsync<LibraryCatalog>(stream, JsonOptions);
-            return catalog?.SchemaVersion == 5 ? catalog : null;
+            return catalog?.SchemaVersion == 7 ? catalog : null;
         }
         catch { return null; }
     }
@@ -159,6 +163,19 @@ public sealed class LibraryScanner
 
     private static string NormalizeName(string value) => Regex.Replace(value.ToLowerInvariant(), @"[^\p{L}\p{N}]", "");
 
+    private static void AssignStemImages(LibraryCatalog catalog)
+    {
+        var sourceImages = catalog.Songs
+            .Concat(catalog.Duplicates)
+            .Where(x => !string.IsNullOrWhiteSpace(x.Id) && !string.IsNullOrWhiteSpace(x.LocalImagePath))
+            .GroupBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.First().LocalImagePath, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var stem in catalog.Stems)
+            if (sourceImages.TryGetValue(stem.StemSourceId, out var sourceImage))
+                stem.LocalImagePath = sourceImage;
+    }
+
     private async Task DownloadImagesAsync(IEnumerable<SongRecord> songs, IProgress<string>? progress, CancellationToken cancellationToken)
     {
         using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(25) };
@@ -196,6 +213,7 @@ public sealed class LibraryScanner
         sb.AppendLine("Suno Library scan report");
         sb.AppendLine($"Generated: {catalog.GeneratedAt:O}");
         sb.AppendLine($"Unique songs: {catalog.Songs.Count}");
+        sb.AppendLine($"Stems: {catalog.Stems.Count}");
         sb.AppendLine($"Duplicate copies: {catalog.Duplicates.Count}");
         sb.AppendLine($"Missing local audio matches: {catalog.Songs.Count(x => !x.HasLocalAudio)}");
         sb.AppendLine($"Missing MP3 links: {catalog.Songs.Count(x => !x.HasMp3)}");

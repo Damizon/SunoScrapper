@@ -62,6 +62,7 @@ public static class MetadataParser
             song.HasVocal = Bool(md, "has_vocal");
             song.MakeInstrumental = Bool(md, "make_instrumental");
             song.PersonaId = String(md, "persona_id");
+            song.StemSourceId = String(md, "stem_from_id");
             song.SourceClipId = FirstNonEmpty(md, "cover_clip_id", "edited_clip_id", "stem_from_id", "upsample_clip_id", "artist_clip_id");
             song.StemType = String(md, "stem_type_group_name", String(md, "stem_type_id"));
             song.ModelDisplayName = NestedString(md, "model_badges", "songrow", "display_name");

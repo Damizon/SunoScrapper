@@ -12,6 +12,7 @@ public sealed class LibraryCatalog
     public DateTime GeneratedAt { get; set; }
     public string LibraryRoot { get; set; } = "";
     public List<SongRecord> Songs { get; set; } = [];
+    public List<SongRecord> Stems { get; set; } = [];
     public List<SongRecord> Duplicates { get; set; } = [];
     public List<ScanIssue> Issues { get; set; } = [];
 }
@@ -53,7 +54,12 @@ public sealed class SongRecord : INotifyPropertyChanged
     public double? AudioWeight { get; set; }
     public List<string> DisplayTags { get; set; } = [];
     public string SourceClipId { get; set; } = "";
+    public string StemSourceId { get; set; } = "";
     public string StemType { get; set; } = "";
+    [JsonIgnore] public bool IsStem => !string.IsNullOrWhiteSpace(StemSourceId);
+    [JsonIgnore] public string StemSourceTitle => IsStem
+        ? System.Text.RegularExpressions.Regex.Replace(Title, @"\s*\([^()]+\)\s*$", "").Trim()
+        : Title;
     [JsonIgnore] public string DurationText => Duration is null ? "" : TimeSpan.FromSeconds(Duration.Value).ToString(Duration >= 3600 ? @"h\:mm\:ss" : @"m\:ss");
     [JsonIgnore] public string DateText => CreatedAt?.ToLocalTime().ToString("dd MMM yyyy, HH:mm") ?? (Year?.ToString() ?? "");
     [JsonIgnore] public string ModelText => !string.IsNullOrWhiteSpace(ModelDisplayName) ? ModelDisplayName : ModelName;
@@ -126,6 +132,7 @@ public sealed class WorkflowGroup : INotifyPropertyChanged
 {
     public string Name { get; set; } = "";
     public List<SongRecord> Songs { get; set; } = [];
+    public bool IsStemGroup { get; set; }
     private bool _isExpanded;
     public bool IsExpanded
     {
@@ -137,7 +144,9 @@ public sealed class WorkflowGroup : INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsExpanded)));
         }
     }
-    public string CountText => $"{Songs.Count} song{(Songs.Count == 1 ? "" : "s")}";
+    public string CountText => IsStemGroup
+        ? $"{Songs.Count} stem{(Songs.Count == 1 ? "" : "s")}"
+        : $"{Songs.Count} song{(Songs.Count == 1 ? "" : "s")}";
     public string HeaderBackground => Name.Equals("Duplicates", StringComparison.OrdinalIgnoreCase) ? "#2A1915" : "#151A20";
     public string HeaderBorderBrush => Name.Equals("Duplicates", StringComparison.OrdinalIgnoreCase) ? "#D66A42" : "#303841";
     public string HeaderForeground => Name.Equals("Duplicates", StringComparison.OrdinalIgnoreCase) ? "#FFB08F" : "#EEF2F5";

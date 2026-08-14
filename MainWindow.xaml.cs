@@ -16,6 +16,7 @@ public partial class MainWindow : Window
     private readonly LibraryScanner _scanner;
     private LibraryCatalog _catalog = new();
     private List<WorkflowGroup> _visibleGroups = [];
+    private bool _showingStems;
     private readonly DispatcherTimer _searchTimer;
     private bool _isFullScreen;
     private WindowState _previousState;
@@ -97,7 +98,7 @@ public partial class MainWindow : Window
     private void ApplyFilterAndSort()
     {
         var query = SearchBox.Text.Trim();
-        IEnumerable<SongRecord> songs = _catalog.Songs.Concat(_catalog.Duplicates);
+        IEnumerable<SongRecord> songs = _showingStems ? _catalog.Stems : _catalog.Songs.Concat(_catalog.Duplicates);
         if (query.Length > 0)
         {
             songs = songs.Where(song => SearchableText(song).Contains(query, StringComparison.CurrentCultureIgnoreCase));
@@ -112,23 +113,39 @@ public partial class MainWindow : Window
             _ => songs.OrderBy(x => x.Workflow, StringComparer.CurrentCultureIgnoreCase).ThenByDescending(x => x.CreatedAt)
         };
 
-        var groups = songs.GroupBy(x => x.IsDuplicate ? "Duplicates" : x.Workflow, StringComparer.CurrentCultureIgnoreCase)
-            .Select(x => new WorkflowGroup { Name = x.Key, Songs = x.ToList(), IsExpanded = query.Length > 0 })
+        var groups = songs.GroupBy(x => _showingStems ? StemGroupKey(x) : x.IsDuplicate ? "Duplicates" : x.Workflow, StringComparer.CurrentCultureIgnoreCase)
+            .Select(x => new WorkflowGroup { Name = x.Key, Songs = x.ToList(), IsExpanded = query.Length > 0, IsStemGroup = _showingStems })
             .OrderBy(x => x.Name.Equals("Duplicates", StringComparison.OrdinalIgnoreCase) ? -1 : x.Name.Equals("safety", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
             .ThenBy(x => x.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
 
         _visibleGroups = groups;
         WorkflowList.ItemsSource = _visibleGroups;
         var shown = groups.Sum(x => x.Songs.Count);
-        StatsText.Text = $"{shown} shown  ·  {_catalog.Songs.Count} unique  ·  {_catalog.Duplicates.Count} duplicate copies";
+        StatsText.Text = _showingStems
+            ? $"{shown} stems shown  ·  {_catalog.Stems.Select(x => x.StemSourceId).Distinct(StringComparer.OrdinalIgnoreCase).Count()} source songs"
+            : $"{shown} shown  ·  {_catalog.Songs.Count} unique  ·  {_catalog.Duplicates.Count} duplicate copies";
+        EmptyStateTitle.Text = _showingStems ? "No stems found" : "No songs found";
         EmptyState.Visibility = shown == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
+
+    private static string StemGroupKey(SongRecord stem) => string.IsNullOrWhiteSpace(stem.StemSourceTitle)
+        ? $"Source {stem.StemSourceId}"
+        : $"{stem.StemSourceTitle}  ·  {stem.Artist}";
 
     private static string SearchableText(SongRecord song) => string.Join('\n', song.Title, song.Artist, song.Workflow, song.StylePrompt, song.Lyrics,
         song.GptDescription, song.PersonaName, song.ModelName, song.ModelDisplayName, song.GenerationType, string.Join(' ', song.DisplayTags),
         song.IsDuplicate ? $"duplicate duplicates {song.DuplicateOfTitle} {song.DuplicateOfWorkflow}" : song.AlsoFoundIn.Count > 0 ? "duplicate duplicates" : "");
 
     private async void Rescan_Click(object sender, RoutedEventArgs e) => await ScanAsync();
+    private void SongsTab_Click(object sender, RoutedEventArgs e) => SetCatalogView(false);
+    private void StemsTab_Click(object sender, RoutedEventArgs e) => SetCatalogView(true);
+    private void SetCatalogView(bool stems)
+    {
+        _showingStems = stems;
+        SongsTabButton.Background = stems ? System.Windows.Media.Brushes.Transparent : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 74, 53));
+        StemsTabButton.Background = stems ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(36, 74, 53)) : System.Windows.Media.Brushes.Transparent;
+        ApplyFilterAndSort();
+    }
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (!IsLoaded) return;

@@ -26,6 +26,8 @@ The files may be organized into workspace folders or placed together in a single
 - Works with workspace folders or a single mixed folder.
 - Searches titles, artists, prompts, lyrics, tags, personas and workspaces.
 - Displays cover artwork and generation metadata.
+- Keeps generated stems out of the song list and groups them by source song in a separate Stems view.
+- Preserves multiple Suno stem variants and reuses the original song artwork.
 - Opens, copies and reveals local WAV files.
 - Opens or downloads the original MP3 from its metadata URL.
 - Detects repeated downloads using the Suno track ID.
@@ -43,7 +45,7 @@ The files may be organized into workspace folders or placed together in a single
 SHA-256 for `SunoScrapper.zip`:
 
 ```text
-DFBA9B0AEB3891C467DDA46441D6A85F114FF480D4A1EFC656C8E947A2BFA7E6
+AF0E769F72FEFDE5BFB16CF25C6A1368CA270DAAFDB9817DD72DF522981A1A5B
 ```
 
 The application creates a `scrapper_db` folder next to the executable. It contains the local catalog cache, downloaded artwork and a scan report. Use **Rescan library** after adding or removing exported tracks.
