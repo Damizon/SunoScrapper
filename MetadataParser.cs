@@ -46,9 +46,7 @@ public static class MetadataParser
             ModelName = String(root, "model_name"),
             IsLiked = Bool(root, "is_liked") ?? false,
             IsPublic = Bool(root, "is_public") ?? false,
-            Workflow = project is { } workspace
-                ? String(workspace, "name", fallbackWorkflow)
-                : fallbackWorkflow,
+            Workflow = ResolveWorkflow(project, text, title, fallbackWorkflow),
             MetadataPath = metadataPath,
         };
 
@@ -116,6 +114,31 @@ public static class MetadataParser
     }
 
     private static string Normalize(string value) => Regex.Replace(value.ToLowerInvariant(), @"[^\p{L}\p{N}]", "");
+    private static string ResolveWorkflow(JsonElement? project, string text, string title, string fallbackWorkflow)
+    {
+        if (project is { } workspace)
+        {
+            var projectName = String(workspace, "name");
+            if (!string.IsNullOrWhiteSpace(projectName)) return projectName;
+        }
+
+        var metadataFor = Regex.Match(text, @"(?m)^Metadata for:\s*(.+?)\s*$").Groups[1].Value.Trim();
+        var fileStem = Path.GetFileNameWithoutExtension(metadataFor);
+        var normalizedTitle = Normalize(title);
+        if (!string.IsNullOrWhiteSpace(fileStem) && !string.IsNullOrWhiteSpace(normalizedTitle))
+        {
+            for (var index = 0; index < fileStem.Length; index++)
+            {
+                if (fileStem[index] != '-') continue;
+                var suffix = fileStem[(index + 1)..];
+                if (!Normalize(suffix).StartsWith(normalizedTitle, StringComparison.OrdinalIgnoreCase)) continue;
+                var prefix = fileStem[..index].Replace('_', ' ').Trim();
+                prefix = Regex.Replace(prefix, @"\s+", " ");
+                if (!string.IsNullOrWhiteSpace(prefix)) return prefix;
+            }
+        }
+        return fallbackWorkflow;
+    }
     private static JsonElement? GetObject(JsonElement parent, string name) => parent.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Object ? value : null;
     private static string String(JsonElement parent, string name, string fallback = "") => parent.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() ?? fallback : fallback;
     private static bool? Bool(JsonElement parent, string name) => parent.TryGetProperty(name, out var value) && (value.ValueKind is JsonValueKind.True or JsonValueKind.False) ? value.GetBoolean() : null;

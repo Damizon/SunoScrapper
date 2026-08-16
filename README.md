@@ -45,7 +45,7 @@ The files may be organized into workspace folders or placed together in a single
 SHA-256 for `SunoScrapper.zip`:
 
 ```text
-AF0E769F72FEFDE5BFB16CF25C6A1368CA270DAAFDB9817DD72DF522981A1A5B
+159C7890566BA9F196F09F29BA0B0E72862E92940B9C6987E0AD377FBC9955B0
 ```
 
 The application creates a `scrapper_db` folder next to the executable. It contains the local catalog cache, downloaded artwork and a scan report. Use **Rescan library** after adding or removing exported tracks.
